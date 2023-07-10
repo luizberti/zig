@@ -534,7 +534,7 @@ const DocData = struct {
         try jsw.beginObject();
         inline for (comptime std.meta.tags(std.meta.FieldEnum(DocData))) |f| {
             const f_name = @tagName(f);
-            try jsw.objectField(f_name);
+            try jsw.emitString(f_name);
             switch (f) {
                 .files => try writeFileTableToJson(self.files, self.modules, &jsw),
                 .guide_sections => try writeGuidesToJson(self.guide_sections, &jsw),
@@ -586,7 +586,7 @@ const DocData = struct {
             try jsw.beginObject();
             inline for (comptime std.meta.tags(std.meta.FieldEnum(DocModule))) |f| {
                 const f_name = @tagName(f);
-                try jsw.objectField(f_name);
+                try jsw.emitString(f_name);
                 switch (f) {
                     .table => try writeModuleTableToJson(self.table, &jsw),
                     else => {
@@ -618,7 +618,6 @@ const DocData = struct {
             jsw.whitespace = opts.whitespace;
             try jsw.beginArray();
             inline for (comptime std.meta.fields(Decl)) |f| {
-                try jsw.arrayElem();
                 try std.json.stringify(@field(self, f.name), opts, w);
                 jsw.state_index -= 1;
             }
@@ -645,7 +644,6 @@ const DocData = struct {
             jsw.whitespace = opts.whitespace;
             try jsw.beginArray();
             inline for (comptime std.meta.fields(AstNode)) |f| {
-                try jsw.arrayElem();
                 try std.json.stringify(@field(self, f.name), opts, w);
                 jsw.state_index -= 1;
             }
@@ -777,13 +775,11 @@ const DocData = struct {
             var jsw = std.json.writeStream(w, 15);
             jsw.whitespace = opts.whitespace;
             try jsw.beginArray();
-            try jsw.arrayElem();
             try jsw.emitNumber(@intFromEnum(active_tag));
             inline for (comptime std.meta.fields(Type)) |case| {
                 if (@field(Type, case.name) == active_tag) {
                     const current_value = @field(self, case.name);
                     inline for (comptime std.meta.fields(case.type)) |f| {
-                        try jsw.arrayElem();
                         if (f.type == std.builtin.Type.Pointer.Size) {
                             try jsw.emitNumber(@intFromEnum(@field(current_value, f.name)));
                         } else {
@@ -920,9 +916,9 @@ const DocData = struct {
             jsw.whitespace = opts.whitespace;
             try jsw.beginObject();
             if (active_tag == .declIndex) {
-                try jsw.objectField("declRef");
+                try jsw.emitString("declRef");
             } else {
-                try jsw.objectField(@tagName(active_tag));
+                try jsw.emitString(@tagName(active_tag));
             }
             switch (self) {
                 .int => {
@@ -4955,11 +4951,8 @@ fn writeFileTableToJson(
     try jsw.beginArray();
     var it = map.iterator();
     while (it.next()) |entry| {
-        try jsw.arrayElem();
         try jsw.beginArray();
-        try jsw.arrayElem();
         try jsw.emitString(entry.key_ptr.*.sub_file_path);
-        try jsw.arrayElem();
         try jsw.emitNumber(mods.getIndex(entry.key_ptr.*.pkg) orelse 0);
         try jsw.endArray();
     }
@@ -4977,20 +4970,18 @@ fn writeGuidesToJson(sections: std.ArrayListUnmanaged(Section), jsw: anytype) !v
 
     for (sections.items) |s| {
         // section name
-        try jsw.arrayElem();
         try jsw.beginObject();
-        try jsw.objectField("name");
+        try jsw.emitString("name");
         try jsw.emitString(s.name);
-        try jsw.objectField("guides");
+        try jsw.emitString("guides");
 
         // section value
         try jsw.beginArray();
         for (s.guides.items) |g| {
-            try jsw.arrayElem();
             try jsw.beginObject();
-            try jsw.objectField("name");
+            try jsw.emitString("name");
             try jsw.emitString(g.name);
-            try jsw.objectField("body");
+            try jsw.emitString("body");
             try jsw.emitString(g.body);
             try jsw.endObject();
         }
@@ -5008,7 +4999,7 @@ fn writeModuleTableToJson(
     try jsw.beginObject();
     var it = map.valueIterator();
     while (it.next()) |entry| {
-        try jsw.objectField(entry.name);
+        try jsw.emitString(entry.name);
         try jsw.emitNumber(entry.value);
     }
     try jsw.endObject();
