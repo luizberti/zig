@@ -378,6 +378,7 @@ pub fn generateZirData(self: *Autodoc) !void {
             \\ var zigAnalysis=
         , .{});
         try std.json.stringify(
+            arena_allocator.allocator(),
             data,
             .{
                 .whitespace = .{ .indent = .none, .separator = false },
