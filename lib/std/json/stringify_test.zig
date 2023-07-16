@@ -286,7 +286,7 @@ test "stringify struct with custom stringifier" {
 }
 
 test "stringify vector" {
-    try teststringify("[1,1]", @splat(2, @as(u32, 1)), .{});
+    try teststringify("[1,1]", @as(@Vector(2, u32), @splat(1)), .{});
 }
 
 test "stringify tuple" {
