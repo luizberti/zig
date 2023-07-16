@@ -381,7 +381,7 @@ pub fn generateZirData(self: *Autodoc) !void {
             arena_allocator.allocator(),
             data,
             .{
-                .whitespace = .{ .indent = .none, .separator = false },
+                .whitespace = .minified,
                 .emit_null_optional_fields = true,
             },
             out,
